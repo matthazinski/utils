@@ -1,0 +1,4 @@
+#!/bin/sh
+# A simple wrapper for youtube-viewer to download to the current directory in a screen session
+screen -d -m youtube-dl $1
+#screen -d -m youtube-viewer -I --downloads-dir . --download-captions --captions-dir=. -d $1
