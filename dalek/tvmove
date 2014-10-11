@@ -1,0 +1,65 @@
+#!/usr/bin/env python
+
+import os
+import re
+
+NEW_DIR = '/mnt/pub/tv/unwatched/'
+TV_DIR = '/mnt/pub/tv/'
+TV_EXTS = ['.mp4', '.mkv', '.avi']
+
+def getDirName(series):
+    dirs = os.listdir(TV_DIR)
+    for dir in dirs:
+        if dir.lower().strip() == series.lower().strip():
+            return dir
+    return None
+
+
+
+
+newItems = os.listdir(NEW_DIR)
+
+print("Searching for files")
+
+for item in newItems:
+    if os.path.isfile(os.path.join(NEW_DIR, item)):
+        ext = os.path.splitext(item)[1] 
+
+        if ext in TV_EXTS:
+            print(item)
+            words = item.replace(' ', '.').split('.')
+            series = ''
+            season = 0
+            for word in words:
+                if any(i.isdigit() for i in word):
+                    # this may contain season information
+                    if re.match(r"[sS]\d\d[eE]\d\d", word):
+                        season = int(word[1:3])
+                    break
+                else:
+                    series = series + word.lower() + ' '
+
+            seriesDirName = getDirName(series)
+
+            if seriesDirName:
+                if season == 0:
+                    # Determine if this is the type of show that doesn't have seasons
+                    mypath = os.path.join(TV_DIR, seriesDirName)
+#                    seasons_list = os.listdir(mypath)
+                    seasons_list = [ f for f in os.listdir(mypath) if os.path.isdir(os.path.join(mypath,f)) ]
+
+                    if not len(seasons_list):
+                        # This isn't split into seasons - move it there anyways
+                        os.rename(os.path.join(NEW_DIR, item), os.path.join(TV_DIR, seriesDirName, item))
+
+                else:
+                    if os.path.isdir(os.path.join(TV_DIR, seriesDirName)):
+                        dest = os.path.join(TV_DIR, seriesDirName, 'Season ' + str(season))
+                         
+                        # create season directory if doesn't exist but show does
+                        if not os.path.exists(dest):
+                           os.makedirs(dest) 
+                        print('{} moved to {}'.format(item, dest))
+
+                        os.rename(os.path.join(NEW_DIR, item), os.path.join(dest, item))
+

@@ -1,0 +1,29 @@
+#!/bin/bash
+
+# usage: backup_dir SRC DEST
+# e.g. backup_dir /mnt/pub/ /mnt/backup/pub
+function backup_dir {
+if [ `ps -ef | grep $2 | grep -c rsync` -gt 1 ]
+then
+    echo "Backup program already running for $1. Exiting."
+    return
+fi
+
+FOUND=0
+for i in `cat /proc/mounts | cut -d' ' -f2`; do
+   if [ "$2" = "$i" ]; then
+      FOUND=1
+      echo "Backup path $2 is mounted. Proceeding."
+      screen -d -m rsync -avpPr --delete $1 $2
+   fi
+
+done
+
+if [ $FOUND -lt 1 ]; then
+    echo "Backup path $2 is not mounted. Exiting."
+fi
+
+}
+
+backup_dir /mnt/pub/ /mnt/backup/pub
+backup_dir /mnt/lts/ /mnt/backup/lts

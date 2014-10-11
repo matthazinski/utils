@@ -1,0 +1,24 @@
+#!/bin/sh
+
+if [ -f /var/lock/mhazinsk/torrents-tv-unwatched.lock ]; then
+    echo "This script is already running. Exiting."
+    exit 0
+fi
+
+touch /var/lock/mhazinsk/torrents-tv-unwatched.lock
+
+rsync -avpPr --password-file=$HOME/conf/private/rsync-pass.txt rsync://pub@oswin.hazinski.net/tv /mnt/pub/tv/unwatched/
+rsync -avpPr /mnt/torrents/downloads/btn/tv/ /mnt/pub/tv/unwatched/
+
+USERNAME=xbmc
+PASSWORD=xbmc
+SERVER=10.0.0.159
+PORT=80
+
+wget --user=$USERNAME --password=$PASSWORD --header='Content-Type: application/json' --post-data='{"jsonrpc": "2.0", "method": "VideoLibrary.Scan"}' http://$SERVER:$PORT/jsonrpc -O /dev/null
+
+wget --user=$USERNAME --password=$PASSWORD --header='Content-Type: application/json' --post-data='{"jsonrpc": "2.0", "method": "VideoLibrary.Clean"}' http://$SERVER:$PORT/jsonrpc -O /dev/null
+
+rm /var/lock/mhazinsk/torrents-tv-unwatched.lock
+
+#python3 /usr/local/bin/tvmove

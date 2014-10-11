@@ -1,0 +1,18 @@
+#!/bin/bash
+
+if [ `ps -ef | grep /mnt/backup/pub | grep -c rsync` -gt 1 ]
+then
+    echo "Backup program already running. Exiting."
+    exit
+fi
+
+
+for i in `cat /proc/mounts | cut -d' ' -f2`; do
+   if [ "/mnt/backup/pub" = "$i" ]; then
+      echo "Backup path is mounted. Proceeding."
+      rsync -avpPr --delete /mnt/pub/ /mnt/backup/pub
+   fi
+
+done
+
+
