@@ -1,0 +1,9 @@
+#!/bin/sh
+# 
+# Usage: lumos (0|1)
+
+USER="admin"
+PASS="hunter2"
+HOST='10.0.0.203:8000'
+
+curl -v -X POST http://$USER:$PASS@$HOST/livingroom/light0/$1
